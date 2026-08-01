@@ -1,6 +1,8 @@
 import { Client } from "@upstash/qstash";
 
-const qstash = new Client({ token: process.env.QSTASH_TOKEN });
+// QSTASH_URL is the region-specific endpoint from the Upstash console
+// (e.g. https://qstash-eu-central-1.upstash.io) — the token is tied to that region.
+const qstash = new Client({ token: process.env.QSTASH_TOKEN, baseUrl: process.env.QSTASH_URL });
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
