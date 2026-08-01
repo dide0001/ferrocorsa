@@ -174,13 +174,31 @@ export default function TrainingLog() {
   const volumeDisplay = useCountUp(totalVolume);
   const setsDisplay = useCountUp(totalSets);
 
+  // The countdown is derived from a fixed wall-clock target (endAt) rather
+  // than decremented tick-by-tick, because setInterval stops firing while
+  // the tab/app is backgrounded or the phone is locked. Recomputing from
+  // endAt makes the display self-correct the moment it's able to run again,
+  // instead of showing whatever stale value it was frozen at.
+  const recomputeFromEndAt = useCallback((t) => {
+    if (!t || !t.running || !t.endAt) return t;
+    const remaining = Math.max(0, Math.round((t.endAt - Date.now()) / 1000));
+    if (remaining <= 0) return { ...t, remaining: 0, running: false, done: true, endAt: null };
+    return { ...t, remaining };
+  }, []);
+
   const startTimer = useCallback((seconds) => {
-    setTimer({ total: seconds, remaining: seconds, running: true, done: false });
+    setTimer({ total: seconds, remaining: seconds, running: true, done: false, endAt: Date.now() + seconds * 1000 });
   }, []);
 
   const adjustTimer = useCallback((delta) => {
     setTimer((t) => {
       if (!t) return t;
+      if (t.running && t.endAt) {
+        const endAt = Math.max(Date.now(), t.endAt + delta * 1000);
+        const remaining = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+        const total = Math.max(t.total, remaining);
+        return { ...t, endAt, remaining, total, done: remaining === 0, running: remaining > 0 };
+      }
       const remaining = Math.max(0, t.remaining + delta);
       const total = Math.max(t.total, remaining);
       return { ...t, remaining, total, done: remaining === 0 };
@@ -188,24 +206,36 @@ export default function TrainingLog() {
   }, []);
 
   const toggleTimer = useCallback(() => {
-    setTimer((t) => (t ? { ...t, running: !t.running } : t));
-  }, []);
+    setTimer((t) => {
+      if (!t) return t;
+      if (t.running) {
+        const paused = recomputeFromEndAt(t);
+        return { ...paused, running: false, endAt: null };
+      }
+      return { ...t, running: true, endAt: Date.now() + t.remaining * 1000 };
+    });
+  }, [recomputeFromEndAt]);
 
   const dismissTimer = useCallback(() => setTimer(null), []);
 
   useEffect(() => {
     if (!timer || !timer.running) return;
     intervalRef.current = setInterval(() => {
-      setTimer((t) => {
-        if (!t) return t;
-        if (t.remaining <= 1) {
-          return { ...t, remaining: 0, running: false, done: true };
-        }
-        return { ...t, remaining: t.remaining - 1 };
-      });
+      setTimer(recomputeFromEndAt);
     }, 1000);
     return () => clearInterval(intervalRef.current);
-  }, [timer && timer.running]);
+  }, [timer && timer.running, recomputeFromEndAt]);
+
+  // Catch up immediately on resume (unlocking the phone, switching back to
+  // the tab) instead of waiting for the next 1s tick, which browsers can
+  // delay noticeably right after a tab was backgrounded.
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === "visible") setTimer(recomputeFromEndAt);
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [recomputeFromEndAt]);
 
   function addExercise() {
     const name = newExerciseName.trim();
