@@ -311,8 +311,8 @@ export default function TrainingLog() {
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes slideUpBar {
-          from { opacity: 0; transform: translate(-50%, 24px); }
-          to { opacity: 1; transform: translate(-50%, 0); }
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         @keyframes flashPulse {
           0% { box-shadow: inset 0 0 0 0px ${T.accent}00; }
@@ -333,13 +333,24 @@ export default function TrainingLog() {
         }
       `}</style>
 
-      <div style={{ width: "100%", maxWidth: 480, minHeight: "100vh", position: "relative", paddingBottom: timer ? 108 : 0 }}>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          minHeight: "100vh",
+          position: "relative",
+          paddingLeft: "env(safe-area-inset-left)",
+          paddingRight: "env(safe-area-inset-right)",
+          paddingBottom: timer ? "calc(120px + env(safe-area-inset-bottom))" : 0,
+        }}
+      >
         {/* Header */}
         <div
           className={mounted ? "mount-header" : undefined}
           style={{
-            padding: "30px 20px 24px",
-            borderBottom: `2px solid ${T.accent}`,
+            padding: "calc(20px + env(safe-area-inset-top)) 20px 24px",
+            borderBottom: `3px solid ${T.accent}`,
+            boxShadow: "0 3px 0 0 #000",
             position: "sticky",
             top: 0,
             background: T.bg,
@@ -460,11 +471,24 @@ export default function TrainingLog() {
   );
 }
 
+// Small disc row — reads as miniature weight plates, not a signal-strength
+// icon. Each is a flat swatch with a thin dark rim for a bit of depth.
 function PlateLegend() {
   return (
-    <div style={{ display: "flex", gap: 4, alignItems: "flex-end" }} aria-hidden="true">
+    <div style={{ display: "flex", gap: 3 }} aria-hidden="true">
       {PLATES.map((p, i) => (
-        <div key={i} title={`${p.label} kg`} style={{ width: 7, height: 16 + i * 4, background: p.color }} />
+        <div
+          key={i}
+          title={`${p.label} kg`}
+          style={{
+            width: 11,
+            height: 11,
+            borderRadius: "50%",
+            background: p.color,
+            boxShadow: `inset 0 0 0 1.5px ${T.bg}`,
+            border: `1px solid ${T.lineBright}`,
+          }}
+        />
       ))}
     </div>
   );
@@ -505,8 +529,10 @@ function ExerciseCard({ exercise, index, flashed, onAddSet, onRemoveSet, onRemov
       style={{
         animationDelay: `${Math.min(index, 6) * 60}ms`,
         background: T.surface,
+        backgroundImage: `repeating-linear-gradient(45deg, #ffffff05 0 1px, transparent 1px 7px)`,
         border: `1px solid ${T.line}`,
-        borderLeft: `3px solid ${T.accent}`,
+        borderLeft: `4px solid ${T.accent}`,
+        boxShadow: "inset 4px 0 0 0 #000",
         overflow: "hidden",
         clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%)",
       }}
@@ -610,13 +636,16 @@ function RestTimerBar({ timer, onToggle, onAdjust, onDismiss }) {
       className="timer-bar-enter"
       style={{
         position: "fixed",
-        left: "50%",
+        left: 0,
+        right: 0,
         bottom: 0,
         width: "100%",
         maxWidth: 480,
+        margin: "0 auto",
         background: T.surface,
         borderTop: `2px solid ${ringColor}`,
-        padding: "14px 18px",
+        boxShadow: `0 -3px 0 0 #000`,
+        padding: "14px 18px calc(14px + env(safe-area-inset-bottom))",
         display: "flex",
         alignItems: "center",
         gap: 14,
