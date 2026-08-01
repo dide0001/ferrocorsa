@@ -5,6 +5,7 @@ import { useRestTimer } from "./useRestTimer";
 import { usePush } from "./usePush";
 import BottomNav, { NAV_HEIGHT } from "./components/BottomNav";
 import RestTimerBar from "./components/RestTimerBar";
+import HorseWatermark from "./components/HorseWatermark";
 import Home from "./pages/Home";
 import Workouts from "./pages/Workouts";
 import WorkoutDetail from "./pages/WorkoutDetail";
@@ -79,9 +80,11 @@ export default function App() {
           paddingBottom: bottomReserve,
           backgroundImage: `radial-gradient(ellipse 480px 340px at 50% -6%, ${T.accent}33, transparent 70%)`,
           backgroundRepeat: "no-repeat",
+          overflow: "hidden",
         }}
       >
-        {renderPage()}
+        <HorseWatermark />
+        <div style={{ position: "relative", zIndex: 1 }}>{renderPage()}</div>
       </div>
 
       {timer && <RestTimerBar timer={timer} onToggle={toggleTimer} onAdjust={adjustTimer} onDismiss={dismissTimer} />}
