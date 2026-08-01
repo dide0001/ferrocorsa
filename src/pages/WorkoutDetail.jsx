@@ -95,11 +95,20 @@ export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubsc
   return (
     <div style={{ paddingBottom: 20 }}>
       {workout.image && (
-        <img
-          src={workout.image}
-          alt=""
-          style={{ display: "block", width: "100%", height: 150, objectFit: "cover", borderRadius: `0 0 ${T.radius}px ${T.radius}px` }}
-        />
+        <div style={{ position: "relative", height: 170 }}>
+          <img
+            src={workout.image}
+            alt=""
+            style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: `linear-gradient(180deg, ${T.bg}22 0%, transparent 35%, ${T.surface} 100%), linear-gradient(90deg, ${T.accentDim}33, transparent 60%)`,
+            }}
+          />
+        </div>
       )}
       <div
         style={{

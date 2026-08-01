@@ -77,6 +77,8 @@ export default function App() {
           paddingLeft: "env(safe-area-inset-left)",
           paddingRight: "env(safe-area-inset-right)",
           paddingBottom: bottomReserve,
+          backgroundImage: `radial-gradient(ellipse 480px 340px at 50% -6%, ${T.accent}33, transparent 70%)`,
+          backgroundRepeat: "no-repeat",
         }}
       >
         {renderPage()}

@@ -58,6 +58,7 @@ export default function BottomNav({ active, onChange }) {
             onClick={() => onChange(tab.id)}
             aria-current={isActive ? "page" : undefined}
             style={{
+              position: "relative",
               flex: 1,
               background: "transparent",
               border: "none",
@@ -69,6 +70,12 @@ export default function BottomNav({ active, onChange }) {
               color,
             }}
           >
+            {isActive && (
+              <span
+                aria-hidden="true"
+                style={{ position: "absolute", top: 4, width: 4, height: 4, borderRadius: "50%", background: T.accent, boxShadow: `0 0 6px 1px ${T.accent}` }}
+              />
+            )}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               {ICONS[tab.id]}
             </svg>

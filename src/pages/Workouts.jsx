@@ -99,7 +99,16 @@ export default function Workouts({ onOpenWorkout }) {
                 style={{ width: "100%", textAlign: "left", background: "transparent", border: "none", padding: 0 }}
               >
                 {w.image && (
-                  <img src={w.image} alt="" style={{ display: "block", width: "100%", height: 90, objectFit: "cover" }} />
+                  <div style={{ position: "relative", height: 100 }}>
+                    <img src={w.image} alt="" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: `linear-gradient(180deg, transparent 40%, ${T.surface} 100%)`,
+                      }}
+                    />
+                  </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: 16 }}>
                   <div>
@@ -200,7 +209,16 @@ export default function Workouts({ onOpenWorkout }) {
                   onClick={submit}
                   disabled={saving}
                   className="disp btn-accent"
-                  style={{ flex: 1, background: T.accent, color: T.bg, border: "none", borderRadius: T.radiusSm, padding: "9px", fontSize: 12.5 }}
+                  style={{
+                    flex: 1,
+                    background: `linear-gradient(160deg, #FF6A4D, ${T.accent})`,
+                    color: T.bg,
+                    border: "none",
+                    borderRadius: T.radiusSm,
+                    padding: "9px",
+                    fontSize: 12.5,
+                    boxShadow: `0 4px 14px -3px ${T.accent}aa`,
+                  }}
                 >
                   {saving ? "Gemmer…" : "Gem workout"}
                 </button>

@@ -26,12 +26,12 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
       className={`mount-card${flashed ? " just-logged" : ""}`}
       style={{
         animationDelay: `${Math.min(index, 6) * 60}ms`,
-        background: T.surface,
+        background: `linear-gradient(160deg, ${T.surfaceRaised} 0%, ${T.surface} 55%)`,
         border: `1px solid ${T.line}`,
         borderLeft: `4px solid ${complete ? "#4FAE63" : T.accent}`,
         borderRadius: T.radius,
         overflow: "hidden",
-        boxShadow: "0 2px 10px -4px #00000088",
+        boxShadow: `0 6px 18px -6px #000000cc, inset 3px 0 8px -4px ${complete ? "#4FAE6355" : T.accentDim}`,
       }}
     >
       <div
@@ -47,10 +47,10 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
           <img
             src={exercise.thumbnail || exercise.images[0]}
             alt=""
-            style={{ width: 40, height: 40, borderRadius: T.radiusSm, objectFit: "cover", flexShrink: 0, background: T.surfaceRaised }}
+            style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, background: T.surfaceRaised, border: `2px solid ${T.line}` }}
           />
         ) : (
-          <div style={{ width: 40, height: 40, borderRadius: T.radiusSm, background: T.surfaceRaised, flexShrink: 0 }} />
+          <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.surfaceRaised, flexShrink: 0 }} />
         )}
 
         <button
@@ -165,8 +165,16 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
         <button
           type="button"
           onClick={submit}
-          className="disp btn-ghost"
-          style={{ flex: 1, background: "transparent", border: `1px solid ${T.accent}`, borderRadius: T.radiusSm, color: T.accent, fontSize: 12.5 }}
+          className="disp btn-accent"
+          style={{
+            flex: 1,
+            background: `linear-gradient(160deg, #FF6A4D, ${T.accent})`,
+            border: "none",
+            borderRadius: T.radiusSm,
+            color: T.bg,
+            fontSize: 12.5,
+            boxShadow: `0 4px 14px -3px ${T.accent}aa`,
+          }}
         >
           Log sæt
         </button>
