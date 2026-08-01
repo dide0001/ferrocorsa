@@ -26,3 +26,6 @@ dev-dist
 
 # Local tooling config
 .claude/
+
+.vercel
+.env*
