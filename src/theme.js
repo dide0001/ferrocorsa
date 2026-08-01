@@ -14,6 +14,8 @@ export const T = {
   textFaint: "#4C4F52",
   accent: "#FF2800",
   accentDim: "#8C0000",
+  radius: 14,
+  radiusSm: 10,
 };
 
 export const PLATES = [

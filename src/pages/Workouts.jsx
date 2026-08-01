@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { T } from "../theme";
 import { getWorkouts, createWorkout, deleteWorkout } from "../api";
+import ExercisePicker from "../components/ExercisePicker";
 
 function blankExerciseRow() {
-  return { key: Math.random().toString(36).slice(2), name: "", targetSets: "3", targetReps: "10" };
+  return { key: Math.random().toString(36).slice(2), exercise: null, targetSets: "3", targetReps: "10" };
 }
 
 export default function Workouts({ onOpenWorkout }) {
@@ -37,11 +38,11 @@ export default function Workouts({ onOpenWorkout }) {
     setFormError(null);
     const trimmedName = name.trim();
     const exercises = rows
-      .map((r) => ({ name: r.name.trim(), targetSets: Number(r.targetSets), targetReps: Number(r.targetReps) }))
-      .filter((e) => e.name);
+      .filter((r) => r.exercise)
+      .map((r) => ({ exerciseId: r.exercise.id, targetSets: Number(r.targetSets), targetReps: Number(r.targetReps) }));
 
     if (!trimmedName) return setFormError("Workout skal have et navn");
-    if (exercises.length === 0) return setFormError("Tilføj mindst én øvelse");
+    if (exercises.length === 0) return setFormError("Vælg mindst én øvelse");
 
     setSaving(true);
     try {
@@ -87,8 +88,9 @@ export default function Workouts({ onOpenWorkout }) {
               style={{
                 background: T.surface,
                 border: `1px solid ${T.line}`,
-                borderLeft: `4px solid ${T.accent}`,
-                clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)",
+                borderRadius: T.radius,
+                overflow: "hidden",
+                boxShadow: "0 4px 16px -6px #00000099",
               }}
             >
               <button
@@ -131,36 +133,31 @@ export default function Workouts({ onOpenWorkout }) {
               type="button"
               onClick={() => setShowForm(true)}
               className="disp btn-ghost"
-              style={{ background: "transparent", border: `1px dashed ${T.lineBright}`, color: T.textMuted, padding: "12px", fontSize: 12.5, marginTop: 6 }}
+              style={{ background: "transparent", border: `1px dashed ${T.lineBright}`, borderRadius: T.radius, color: T.textMuted, padding: "12px", fontSize: 12.5, marginTop: 6 }}
             >
               + Ny workout
             </button>
           )}
 
           {showForm && (
-            <div style={{ background: T.surface, border: `1px dashed ${T.lineBright}`, padding: 14, marginTop: 6 }}>
+            <div style={{ background: T.surface, border: `1px dashed ${T.lineBright}`, borderRadius: T.radius, padding: 14, marginTop: 6 }}>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Navn, fx Arm Day"
-                style={{ width: "100%", background: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text, padding: "8px 10px", fontSize: 14, marginBottom: 10 }}
+                style={{ width: "100%", background: T.surfaceRaised, border: `1px solid ${T.line}`, borderRadius: T.radiusSm, color: T.text, padding: "8px 10px", fontSize: 14, marginBottom: 10 }}
               />
 
               {rows.map((r) => (
                 <div key={r.key} style={{ display: "flex", gap: 6, marginBottom: 8 }}>
-                  <input
-                    value={r.name}
-                    onChange={(e) => updateRow(r.key, "name", e.target.value)}
-                    placeholder="Øvelse"
-                    style={{ flex: 1, background: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text, padding: "7px 8px", fontSize: 13 }}
-                  />
+                  <ExercisePicker value={r.exercise} onSelect={(ex) => updateRow(r.key, "exercise", ex)} />
                   <input
                     type="number"
                     min="1"
                     value={r.targetSets}
                     onChange={(e) => updateRow(r.key, "targetSets", e.target.value)}
                     placeholder="Sæt"
-                    style={{ width: 52, background: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text, padding: "7px 8px", fontSize: 13 }}
+                    style={{ width: 48, background: T.surfaceRaised, border: `1px solid ${T.line}`, borderRadius: T.radiusSm, color: T.text, padding: "7px 6px", fontSize: 13 }}
                   />
                   <input
                     type="number"
@@ -168,7 +165,7 @@ export default function Workouts({ onOpenWorkout }) {
                     value={r.targetReps}
                     onChange={(e) => updateRow(r.key, "targetReps", e.target.value)}
                     placeholder="Reps"
-                    style={{ width: 52, background: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text, padding: "7px 8px", fontSize: 13 }}
+                    style={{ width: 48, background: T.surfaceRaised, border: `1px solid ${T.line}`, borderRadius: T.radiusSm, color: T.text, padding: "7px 6px", fontSize: 13 }}
                   />
                   <button
                     type="button"
@@ -194,7 +191,7 @@ export default function Workouts({ onOpenWorkout }) {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  style={{ flex: 1, background: "transparent", border: `1px solid ${T.line}`, color: T.textMuted, padding: "9px", fontSize: 12.5 }}
+                  style={{ flex: 1, background: "transparent", border: `1px solid ${T.line}`, borderRadius: T.radiusSm, color: T.textMuted, padding: "9px", fontSize: 12.5 }}
                 >
                   Annullér
                 </button>
@@ -203,7 +200,7 @@ export default function Workouts({ onOpenWorkout }) {
                   onClick={submit}
                   disabled={saving}
                   className="disp btn-accent"
-                  style={{ flex: 1, background: T.accent, color: T.bg, border: "none", padding: "9px", fontSize: 12.5 }}
+                  style={{ flex: 1, background: T.accent, color: T.bg, border: "none", borderRadius: T.radiusSm, padding: "9px", fontSize: 12.5 }}
                 >
                   {saving ? "Gemmer…" : "Gem workout"}
                 </button>

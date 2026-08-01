@@ -1,19 +1,21 @@
 import { randomUUID } from "node:crypto";
 import { redis } from "../lib/redis.js";
 
+// exerciseId values reference records imported by scripts/import-exercises.mjs
+// (Free Exercise DB ids) — resolved to full name/image/instructions client-side.
 const DEFAULT_WORKOUTS = [
   {
     id: "seed-leg-day",
     name: "Leg Day",
     category: "Strength",
     description: "Fokus på quads, baglår og baller — tunge composite-øvelser først.",
-    image: "/images/workouts/leg-day.svg",
+    image: "/images/stock/tire-tread.jpg",
     muscleGroups: ["quads", "glutes", "hamstrings"],
     exercises: [
-      { id: "seed-leg-1", name: "Barbell Squat", targetSets: 4, targetReps: 8 },
-      { id: "seed-leg-2", name: "Romanian Deadlift", targetSets: 4, targetReps: 10 },
-      { id: "seed-leg-3", name: "Leg Press", targetSets: 3, targetReps: 12 },
-      { id: "seed-leg-4", name: "Walking Lunges", targetSets: 3, targetReps: 20 },
+      { exerciseId: "Barbell_Squat", targetSets: 4, targetReps: 8 },
+      { exerciseId: "Romanian_Deadlift", targetSets: 4, targetReps: 10 },
+      { exerciseId: "Leg_Press", targetSets: 3, targetReps: 12 },
+      { exerciseId: "Barbell_Walking_Lunge", targetSets: 3, targetReps: 20 },
     ],
   },
   {
@@ -21,13 +23,13 @@ const DEFAULT_WORKOUTS = [
     name: "Push Day",
     category: "Strength",
     description: "Bryst, skuldre og triceps. Byg trykkraften op.",
-    image: "/images/workouts/push-day.svg",
+    image: "/images/stock/speedometer.jpg",
     muscleGroups: ["chest", "shoulders", "triceps"],
     exercises: [
-      { id: "seed-push-1", name: "Bench Press", targetSets: 4, targetReps: 8 },
-      { id: "seed-push-2", name: "Overhead Press", targetSets: 4, targetReps: 10 },
-      { id: "seed-push-3", name: "Incline Dumbbell Press", targetSets: 3, targetReps: 12 },
-      { id: "seed-push-4", name: "Triceps Pushdown", targetSets: 3, targetReps: 15 },
+      { exerciseId: "Barbell_Bench_Press_-_Medium_Grip", targetSets: 4, targetReps: 8 },
+      { exerciseId: "Standing_Military_Press", targetSets: 4, targetReps: 10 },
+      { exerciseId: "Incline_Dumbbell_Press", targetSets: 3, targetReps: 12 },
+      { exerciseId: "Triceps_Pushdown", targetSets: 3, targetReps: 15 },
     ],
   },
   {
@@ -35,13 +37,13 @@ const DEFAULT_WORKOUTS = [
     name: "Pull Day",
     category: "Strength",
     description: "Ryg og biceps. Tungt håndtag, kontrolleret excentrisk.",
-    image: "/images/workouts/pull-day.svg",
+    image: "/images/stock/tachometer.jpg",
     muscleGroups: ["back", "biceps"],
     exercises: [
-      { id: "seed-pull-1", name: "Deadlift", targetSets: 4, targetReps: 6 },
-      { id: "seed-pull-2", name: "Pull-Up", targetSets: 4, targetReps: 8 },
-      { id: "seed-pull-3", name: "Barbell Row", targetSets: 3, targetReps: 10 },
-      { id: "seed-pull-4", name: "Barbell Curl", targetSets: 3, targetReps: 12 },
+      { exerciseId: "Barbell_Deadlift", targetSets: 4, targetReps: 6 },
+      { exerciseId: "Pullups", targetSets: 4, targetReps: 8 },
+      { exerciseId: "Bent_Over_Barbell_Row", targetSets: 3, targetReps: 10 },
+      { exerciseId: "Barbell_Curl", targetSets: 3, targetReps: 12 },
     ],
   },
 ];
@@ -55,8 +57,7 @@ async function getOrSeedWorkouts() {
 
 function normalizeExercise(e) {
   return {
-    id: e.id || randomUUID(),
-    name: String(e.name || "").trim(),
+    exerciseId: String(e.exerciseId || "").trim(),
     targetSets: Math.max(1, Number(e.targetSets) || 3),
     targetReps: Math.max(1, Number(e.targetReps) || 10),
   };

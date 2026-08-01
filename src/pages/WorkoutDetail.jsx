@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { T, uid } from "../theme";
-import { getWorkouts, logCompletedWorkout } from "../api";
+import { getWorkouts, getExercise, logCompletedWorkout } from "../api";
 import { scheduleRestPush } from "../usePush";
 import ExerciseLogger from "../components/ExerciseLogger";
 import { DEFAULT_REST_SECONDS } from "../useRestTimer";
 
 export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubscription }) {
   const [workout, setWorkout] = useState(null);
+  const [exercises, setExercises] = useState([]); // { exerciseId, targetSets, targetReps, ...libraryRecord }
   const [status, setStatus] = useState("loading");
   const [loggedByExercise, setLoggedByExercise] = useState({});
   const [justLogged, setJustLogged] = useState(null);
@@ -16,11 +17,24 @@ export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubsc
   useEffect(() => {
     let cancelled = false;
     getWorkouts()
-      .then((all) => {
-        if (cancelled) return;
+      .then(async (all) => {
         const found = all.find((w) => w.id === workoutId);
-        setWorkout(found || null);
-        setStatus(found ? "ready" : "not-found");
+        if (!found) {
+          if (!cancelled) setStatus("not-found");
+          return;
+        }
+        const details = await Promise.all(
+          found.exercises.map((ex) => getExercise(ex.exerciseId).catch(() => null))
+        );
+        if (cancelled) return;
+        setWorkout(found);
+        setExercises(
+          found.exercises.map((ex, i) => ({
+            ...ex,
+            ...(details[i] || { name: ex.exerciseId, images: [], instructions: [], primaryMuscles: [] }),
+          }))
+        );
+        setStatus("ready");
       })
       .catch(() => !cancelled && setStatus("error"));
     return () => {
@@ -29,9 +43,9 @@ export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubsc
   }, [workoutId]);
 
   const allComplete = useMemo(() => {
-    if (!workout) return false;
-    return workout.exercises.every((ex) => (loggedByExercise[ex.id]?.length || 0) >= ex.targetSets);
-  }, [workout, loggedByExercise]);
+    if (exercises.length === 0) return false;
+    return exercises.every((ex) => (loggedByExercise[ex.exerciseId]?.length || 0) >= ex.targetSets);
+  }, [exercises, loggedByExercise]);
 
   useEffect(() => {
     if (!workout || !allComplete || loggedCompletionRef.current) return;
@@ -43,11 +57,11 @@ export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubsc
   function addSet(exercise, reps, weight) {
     setLoggedByExercise((prev) => ({
       ...prev,
-      [exercise.id]: [...(prev[exercise.id] || []), { id: uid(), reps, weight }],
+      [exercise.exerciseId]: [...(prev[exercise.exerciseId] || []), { id: uid(), reps, weight }],
     }));
     startTimer(DEFAULT_REST_SECONDS);
     scheduleRestPush(pushSubscription, exercise.name);
-    setJustLogged(exercise.id);
+    setJustLogged(exercise.exerciseId);
     setTimeout(() => setJustLogged(null), 420);
   }
 
@@ -76,18 +90,21 @@ export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubsc
     );
   }
 
-  const totalTargetSets = workout.exercises.reduce((sum, ex) => sum + ex.targetSets, 0);
+  const totalTargetSets = exercises.reduce((sum, ex) => sum + ex.targetSets, 0);
 
   return (
     <div style={{ paddingBottom: 20 }}>
       {workout.image && (
-        <img src={workout.image} alt="" style={{ display: "block", width: "100%", height: 130, objectFit: "cover" }} />
+        <img
+          src={workout.image}
+          alt=""
+          style={{ display: "block", width: "100%", height: 150, objectFit: "cover", borderRadius: `0 0 ${T.radius}px ${T.radius}px` }}
+        />
       )}
       <div
         style={{
           padding: "16px 20px 20px",
-          borderBottom: `3px solid ${T.accent}`,
-          boxShadow: "0 3px 0 0 #000",
+          borderBottom: `1px solid ${T.line}`,
           background: T.surface,
         }}
       >
@@ -97,7 +114,7 @@ export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubsc
           <p style={{ fontSize: 13, color: T.textMuted, margin: "0 0 12px" }}>{workout.description}</p>
         )}
         <div style={{ display: "flex", gap: 20 }}>
-          <MiniStat label="Øvelser" value={workout.exercises.length} />
+          <MiniStat label="Øvelser" value={exercises.length} />
           <MiniStat label="Mål-sæt" value={totalTargetSets} />
           <MiniStat label="Kategori" value={workout.category} />
         </div>
@@ -139,15 +156,15 @@ export default function WorkoutDetail({ workoutId, onBack, startTimer, pushSubsc
       )}
 
       <div style={{ padding: "18px 20px 0", display: "flex", flexDirection: "column", gap: 14 }}>
-        {workout.exercises.map((ex, i) => (
+        {exercises.map((ex, i) => (
           <ExerciseLogger
-            key={ex.id}
+            key={ex.exerciseId}
             exercise={ex}
             index={i}
-            loggedSets={loggedByExercise[ex.id] || []}
-            flashed={justLogged === ex.id}
+            loggedSets={loggedByExercise[ex.exerciseId] || []}
+            flashed={justLogged === ex.exerciseId}
             onAddSet={(reps, weight) => addSet(ex, reps, weight)}
-            onRemoveSet={(setId) => removeSet(ex.id, setId)}
+            onRemoveSet={(setId) => removeSet(ex.exerciseId, setId)}
           />
         ))}
       </div>

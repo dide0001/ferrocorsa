@@ -33,3 +33,13 @@ export function getCompletedWorkouts() {
 export function logCompletedWorkout(workoutId) {
   return request("/api/completed-workouts", { method: "POST", body: JSON.stringify({ workoutId }) });
 }
+
+export function getExerciseIndex(query = {}) {
+  const params = new URLSearchParams(query);
+  const qs = params.toString();
+  return request(`/api/exercises${qs ? `?${qs}` : ""}`);
+}
+
+export function getExercise(id) {
+  return request(`/api/exercises/${encodeURIComponent(id)}`);
+}

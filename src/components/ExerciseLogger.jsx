@@ -4,6 +4,7 @@ import { T, plateColor } from "../theme";
 export default function ExerciseLogger({ exercise, loggedSets, index, flashed, onAddSet, onRemoveSet }) {
   const [reps, setReps] = useState("");
   const [weight, setWeight] = useState("");
+  const [expanded, setExpanded] = useState(false);
 
   const bestSet = loggedSets.reduce((best, s) => {
     const w = Number(s.weight) || 0;
@@ -11,6 +12,7 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
   }, null);
 
   const complete = loggedSets.length >= exercise.targetSets;
+  const hasDetails = (exercise.instructions?.length || 0) > 0 || (exercise.primaryMuscles?.length || 0) > 0;
 
   function submit() {
     if (!reps || !weight) return;
@@ -25,29 +27,46 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
       style={{
         animationDelay: `${Math.min(index, 6) * 60}ms`,
         background: T.surface,
-        backgroundImage: `repeating-linear-gradient(45deg, #ffffff05 0 1px, transparent 1px 7px)`,
         border: `1px solid ${T.line}`,
         borderLeft: `4px solid ${complete ? "#4FAE63" : T.accent}`,
-        boxShadow: "inset 4px 0 0 0 #000",
+        borderRadius: T.radius,
         overflow: "hidden",
-        clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%)",
+        boxShadow: "0 2px 10px -4px #00000088",
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          padding: "13px 14px",
+          gap: 10,
+          padding: "12px 14px",
           borderBottom: loggedSets.length ? `1px solid ${T.line}` : "none",
         }}
       >
-        <div>
-          <h2 style={{ fontSize: 16, margin: 0, fontWeight: 700, letterSpacing: "0.01em" }}>{exercise.name}</h2>
+        {exercise.thumbnail || exercise.images?.[0] ? (
+          <img
+            src={exercise.thumbnail || exercise.images[0]}
+            alt=""
+            style={{ width: 40, height: 40, borderRadius: T.radiusSm, objectFit: "cover", flexShrink: 0, background: T.surfaceRaised }}
+          />
+        ) : (
+          <div style={{ width: 40, height: 40, borderRadius: T.radiusSm, background: T.surfaceRaised, flexShrink: 0 }} />
+        )}
+
+        <button
+          type="button"
+          onClick={() => hasDetails && setExpanded((v) => !v)}
+          style={{ flex: 1, textAlign: "left", background: "none", border: "none", padding: 0, cursor: hasDetails ? "pointer" : "default" }}
+        >
+          <h2 style={{ fontSize: 15, margin: 0, fontWeight: 700, letterSpacing: "0.01em" }}>
+            {exercise.name}
+            {hasDetails && <span style={{ color: T.textFaint, fontSize: 11, marginLeft: 6 }}>{expanded ? "▲" : "▼"}</span>}
+          </h2>
           <span className="mono" style={{ fontSize: 12, color: T.textMuted }}>
             {loggedSets.length}/{exercise.targetSets} × {exercise.targetReps}
           </span>
-        </div>
+        </button>
+
         <span
           aria-hidden="true"
           style={{
@@ -67,6 +86,31 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
           ✓
         </span>
       </div>
+
+      {expanded && hasDetails && (
+        <div style={{ padding: "10px 14px", background: T.surfaceRaised, borderBottom: `1px solid ${T.line}` }}>
+          {exercise.primaryMuscles?.length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+              {exercise.primaryMuscles.map((m) => (
+                <span
+                  key={m}
+                  className="mono"
+                  style={{ fontSize: 10, color: T.accent, border: `1px solid ${T.accentDim}`, borderRadius: 6, padding: "2px 7px", textTransform: "uppercase" }}
+                >
+                  {m}
+                </span>
+              ))}
+            </div>
+          )}
+          {exercise.instructions?.length > 0 && (
+            <ol style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: T.textMuted, lineHeight: 1.5 }}>
+              {exercise.instructions.map((step, i) => (
+                <li key={i} style={{ marginBottom: 4 }}>{step}</li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
 
       {loggedSets.length > 0 && (
         <div style={{ padding: "6px 14px 2px" }}>
@@ -106,7 +150,7 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
           onChange={(e) => setReps(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
           placeholder="Reps"
-          style={{ width: 68, background: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text, padding: "8px 10px", fontSize: 14 }}
+          style={{ width: 68, background: T.surfaceRaised, border: `1px solid ${T.line}`, borderRadius: T.radiusSm, color: T.text, padding: "8px 10px", fontSize: 14 }}
         />
         <input
           type="number"
@@ -116,13 +160,13 @@ export default function ExerciseLogger({ exercise, loggedSets, index, flashed, o
           onChange={(e) => setWeight(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
           placeholder="Kg"
-          style={{ width: 68, background: T.surfaceRaised, border: `1px solid ${T.line}`, color: T.text, padding: "8px 10px", fontSize: 14 }}
+          style={{ width: 68, background: T.surfaceRaised, border: `1px solid ${T.line}`, borderRadius: T.radiusSm, color: T.text, padding: "8px 10px", fontSize: 14 }}
         />
         <button
           type="button"
           onClick={submit}
           className="disp btn-ghost"
-          style={{ flex: 1, background: "transparent", border: `1px solid ${T.accent}`, color: T.accent, fontSize: 12.5 }}
+          style={{ flex: 1, background: "transparent", border: `1px solid ${T.accent}`, borderRadius: T.radiusSm, color: T.accent, fontSize: 12.5 }}
         >
           Log sæt
         </button>
